@@ -91,7 +91,20 @@ void PrintDefaultParameters(bool to_file = true);
 
 int main(int argc, char *argv[]) //read in variables and determined how we are aligning sequences to provided germlines
 {
-	
+
+	if (argc == 1 or !argv){
+		printf("Error: You must enter the location of the sequence file, and the location of at least one database to compare to\n");
+		exit(EXIT_FAILURE);
+	}
+
+	// Automatically flush stdout after each print command
+	// Allows better tracking of progress through multiple processes
+	std::cout.setf( std::ios_base::unitbuf );
+	setbuf(stdout, NULL);
+
+	std::printf("Initializing user settings.\n");
+	fflush(stdout);
+
 	InitializeUserSettings();
 	
 	map<string, int> alignmentMethod; //sturucture of alignmentMethodl -> {'vgene': '0, 1, or 2', 'jgene': '0, 1, or 2'} where 0 = > no alignment to germline, 1 => use clusters to align, 2 => use unclustered germlines to align
@@ -99,7 +112,11 @@ int main(int argc, char *argv[]) //read in variables and determined how we are a
 	alignmentMethod["jgene"] = NONE;
 	alignmentMethod["dgene"] = NONE;
 
-	//First, evaluate command line parameters inputed by the user	
+	//First, evaluate command line parameters inputed by the user
+
+	std::printf("Evaluating parameters.\n");
+
+
 	EvaluateParameters(argc, argv);
 
 	//NEXT START IMPORTING ALL OF THE FILES AND READING IN THE GERMLINE DATABASE AND SEQUENCES //////
@@ -231,7 +248,7 @@ void RunAlignmentProgram(map<string, int> method)
 		if (perDone%perIndiciate == 0 && perDone > startPer){
 			current_clock = clock();
 			analysis_time = ((current_clock - total_time)*1.0 / CLOCKS_PER_SEC) / 60;
-			printf("%i Percent Complete: %g minutes \n", perDone, analysis_time);
+			printf("%i%% percent done: %g minutes \n", perDone, analysis_time);
 			startPer = perDone;
 		}
 		/**/
@@ -518,6 +535,12 @@ void EvaluateParameters(int argc, char *argv[]){
 	/*printf("%i\n", argc);
 	for (int z = 0; z < argc; z++)
 		printf("%s\n",argv[z]);*/
+
+	if ( argc == 0 || ! argv ){
+		printf("Error: You must enter the location of the sequence file, and the location of at least one database to compare to\n");
+		exit(EXIT_FAILURE);
+	}
+
 	if (argc < 4){//check input arguments
 		if (string(argv[1]) == "--defaults"){
 			PrintDefaultParameters();
